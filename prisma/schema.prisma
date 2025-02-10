@@ -19,7 +19,7 @@ model User {
   password_hash String
   blogPosts     BlogPost[]
   comments      Comment[]
-  isBlogger     Boolean
+  isBlogger     Boolean    @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
