@@ -18,12 +18,15 @@ module.exports = {
   createBlog: [
     body("title")
       .notEmpty()
-    .withMessage("Title cannot be empty.")
+      .withMessage("Title cannot be empty.")
       .escape(),
     body("content")
       .notEmpty()
-    .withMessage("Content cannot be empty")
+      .withMessage("Content cannot be empty")
       .escape(),
+    body("isPublished")
+      .isBoolean()
+      .withMessage("isPublished must be a boolean"),
 
     async (req, res, next) => {
       const errors = validationResult(req);
@@ -38,7 +41,8 @@ module.exports = {
           data: {
             title: title,
             content: content,
-            user: { connect: { id: req.user.id } }
+            user: { connect: { id: req.user.id } },
+            isPublished: req.body.isPublished || false
           }
         })
 
