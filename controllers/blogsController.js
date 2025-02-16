@@ -8,12 +8,12 @@ module.exports = {
       const blogs = await prisma.blogPost.findMany({
         include: {
           user: {
-            select:{
-              username:true,
+            select: {
+              username: true,
               isBlogger: true,
               //password_hash:false,
             }
-          } 
+          }
         },
         where: { isPublished: true }
       })
@@ -25,6 +25,31 @@ module.exports = {
     }
   },
   getBlog: async (req, res, next) => {
+    try {
+      const blog = await prisma.blogPost.findUnique({
+        include: {
+          user: {
+            select: {
+              username: true,
+              isBlogger: true,
+              //password_hash:false,
+            }
+          }
+        },
+        where: {
+          isPublished: true,
+          id: parseInt(req.params.blogId)
+        }
+      })
+      if (!blog) {
+        res.status(400).json({ success: false, message: "Blog not found" })
+      }
+      res.status(200).json({ success: true, blog })
+    }
+    catch (err) {
+      console.error(err)
+      res.status(500).json({ success: false, message: 'Server Error when getting blogs' })
+    }
 
   },
   getComments: async (req, res, next) => {
