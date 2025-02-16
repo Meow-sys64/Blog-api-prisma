@@ -5,7 +5,7 @@ const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 const fs = require("fs");
 const path = require("path");
-const pathToPubKey = path.join(__dirname, "..", "/keypairs", "id_rsa_pub.pem");
+const pathToPubKey = path.join(__dirname, "../keypairs", "id_rsa_pub.pem");
 const PUB_KEY = fs.readFileSync(pathToPubKey, "utf8");
 
 var opts = {}
@@ -16,7 +16,7 @@ opts.secretOrKey = PUB_KEY
 opts.algorithms = ['RS256']
 
 const strategy = new JwtStrategy(opts, function(jwt_payload, done) {
-  prisma.user.findUnique({ id: jwt_payload.sub })
+  prisma.user.findUnique({ where: { id: jwt_payload.sub } })
     .then((user) => {
       if (user) {
         return done(null, user)
@@ -27,8 +27,8 @@ const strategy = new JwtStrategy(opts, function(jwt_payload, done) {
     .catch(err => done(err, false))
 })
 
-module.exports = (passport) =>{   
-  passport.use(strategy) 
+module.exports = (passport) => {
+  passport.use(strategy)
 }
 
 
