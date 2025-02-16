@@ -54,6 +54,51 @@ module.exports = {
 
 
     }],
+  login: [
+    body("username")
+      .notEmpty()
+      .escape()
+      .withMessage("Error with username format"),
+    body("password")
+      .notEmpty()
+      .withMessage("Password cannot be empty")
+      .isLength({ min: 5 })
+      .withMessage("Password must be at least 5 characters long")
+      .escape(),
 
+    async (req, res, next) => {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ success: false, errorArray: errors.array() })
+      }
+      try {
+        //get user
+        const { username, password } = req.body
+        const user = await prisma.user.findUnique({
+          where: {
+            username: username
+          }
+        })
+        //Verify user
+        if (!user) {
+          return res.status(400).json({ success: false, message: "Username does not exist." })
+        }
+
+        //Verify password
+        const isValid = validateHash(password, user.password_hash)
+        if (!isValid) {
+          return res.status(400).json({ success: false, message: "Incorrect Password" })
+        }
+
+        //issue token
+        const jwt = issueJWT(user)
+        return res.status(200).json({ success: true, token: jwt })
+
+      }
+      catch (err) {
+        console.error(err)
+        return res.status(500).json({ success: false, message: "Server Error when issuing token" })
+      }
+    }],
   },
 }
