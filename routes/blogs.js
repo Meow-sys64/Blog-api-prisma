@@ -11,7 +11,7 @@ router.get("/:blogId/comments", blogsController.getComments)
 router.get("/:blogId/comments/:commentId", blogsController.getComment)
 
 router.post("/", passport.authenticate("jwt", { session: false }), validateBlogger, blogsController.createBlog)
-router.post("/blogs/:blogId/Comments", passport.authenticate("jwt", { session: false }), blogsController.createComment)
+router.post("/:blogId/comments", passport.authenticate("jwt", { session: false }), blogsController.createComment)
 
 
 router.put("/:blogId", passport.authenticate("jwt", { session: false }), validateBlogger, validatePostCreator, blogsController.updateBlog)
