@@ -1,32 +1,67 @@
+const { PrismaClient } = require('@prisma/client')
+const prisma = new PrismaClient()
+const { body, validationResult } = require('express-validator');
+
 module.exports = {
-  getBlogs: async (req,res,next)=>{
+  getBlogs: async (req, res, next) => {
 
   },
-  getBlog: async (req,res,next)=>{
+  getBlog: async (req, res, next) => {
 
   },
-  getComments: async (req,res,next)=>{
+  getComments: async (req, res, next) => {
 
   },
-  getComment: async (req,res,next)=>{
+  getComment: async (req, res, next) => {
 
   },
-  createBlog: async (req,res,next)=>{
+  createBlog: [
+    body("title")
+      .notEmpty()
+    .withMessage("Title cannot be empty.")
+      .escape(),
+    body("content")
+      .notEmpty()
+    .withMessage("Content cannot be empty")
+      .escape(),
+
+    async (req, res, next) => {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ success: false, errorArray: errors.array() })
+      }
+
+      //create blog
+      const { title, content } = req.body
+      try {
+        await prisma.blogPost.create({
+          data: {
+            title: title,
+            content: content,
+            user: { connect: { id: req.user.id } }
+          }
+        })
+
+        return res.status(200).json({ success: true, message: "Blog created" })
+      }
+      catch (err) {
+        console.error(err)
+        return res.status(500).json({ success: false, message: "Server Error when creating blog post" })
+      }
+    }],
+  createComment: async (req, res, next) => {
 
   },
-  createComment: async (req,res,next)=>{
+  updateBlog: async (req, res, next) => {
 
   },
-  updateBlog: async (req,res,next)=>{
+  updateComment: async (req, res, next) => {
 
   },
-  updateComment: async (req,res,next)=>{
+  deleteBlog: async (req, res, next) => {
 
   },
-  deleteBlog: async (req,res,next)=>{
-
-  },
-  deleteComment: async (req,res,next)=>{
+  deleteComment: async (req, res, next) => {
 
   },
 }
