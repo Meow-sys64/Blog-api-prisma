@@ -14,6 +14,11 @@ app.use("/", indexRoute)
 app.use("/blogs", blogsRoute)
 app.use("/user", userRoute)
 
-app.listen(PORT, ()=>{
+app.all("/*", (req, res, next) => {
+  //console.error(err)
+  return res.status(404).json({ success: false, message: "Resource Not Found" })
+})
+
+app.listen(PORT, () => {
   console.log(`App starting on Port: ${PORT}`)
 })
