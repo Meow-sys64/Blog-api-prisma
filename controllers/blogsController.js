@@ -3,8 +3,26 @@ const prisma = new PrismaClient()
 const { body, validationResult } = require('express-validator');
 
 module.exports = {
-  getBlogs: async (req, res, next) => {
-
+  getPublishedBlogs: async (req, res, next) => {
+    try {
+      const blogs = await prisma.blogPost.findMany({
+        include: {
+          user: {
+            select:{
+              username:true,
+              isBlogger: true,
+              //password_hash:false,
+            }
+          } 
+        },
+        where: { isPublished: true }
+      })
+      res.status(200).json({ success: true, blogs })
+    }
+    catch (err) {
+      console.error(err)
+      res.status(500).json({ success: false, message: 'Server Error when getting blogs' })
+    }
   },
   getBlog: async (req, res, next) => {
 
