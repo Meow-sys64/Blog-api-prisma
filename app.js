@@ -3,7 +3,8 @@ const app = express()
 const passport = require("passport")
 require("./config/passport.js")(passport)
 const PORT = process.env.PORT || 3235
-
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
 const indexRoute = require("./routes/index")
 const userRoute = require("./routes/user")
