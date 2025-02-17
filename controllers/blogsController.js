@@ -62,11 +62,11 @@ module.exports = {
             }
           },
         },
-        where: { 
+        where: {
           //blogPostId: parseInt(req.params.blogId),
-          blogPost:{
+          blogPost: {
             id: parseInt(req.params.blogId),
-            isPublished:true
+            isPublished: true
           }
         }
       })
@@ -159,9 +159,39 @@ module.exports = {
         res.status(500).json({ success: false, message: "Server Error creating comment" })
       }
     }],
-  updateBlog: async (req, res, next) => {
+  updateBlog: [
+    body("title")
+      .escape(),
+    body("content")
+      .escape(),
+    body("isPublished")
+      .isBoolean()
+      .withMessage("isPublished must be a boolean"),
 
-  },
+    async (req, res, next) => {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ success: false, errorArray: errors.array() })
+      }
+
+      //update blog
+      let updatedData = {}
+      if (req.body.title) updatedData.title = req.body.title;
+      if (req.body.content) updatedData.content = req.body.content;
+      if (req.body.isPublished !== undefined) updatedData.isPublished = req.body.isPublished;
+
+      try {
+        await prisma.blogPost.update({
+          where: { id: parseInt(req.params.blogId) },
+          data:updatedData 
+        })
+        return res.status(200).json({ success: true, message: "Blog updated" })
+      }
+      catch (err) {
+        console.error(err)
+        return res.status(500).json({ success: false, message: "Server Error when creating blog post" })
+      }
+    }],
   updateComment: async (req, res, next) => {
 
   },

@@ -36,38 +36,24 @@ function validateBlogger(req, res, next) {
   }
 }
 
-async function validatePostCreator(req, res, next) {
-  try {
-    const blog = await prisma.blogPost.findUnique({
-      where: { id: req.params.blogId }
-    })
-
+function validatePostCreator(req, res, next) {
+  prisma.blogPost.findUnique({
+    where: { id: parseInt(req.params.blogId) }
+  })
+  .then(blog => {
     if (!blog) {
-      return res.status(400).json({ success: false, message: "Blog does not exist" })
+      return res.status(400).json({ success: false, message: "Blog does not exist" });
     }
 
     if (blog.userId !== req.user.id) {
-      return res.status(403).json({ success: false, message: "User does not own Blog" })
+      return res.status(403).json({ success: false, message: "User does not own Blog" });
     }
 
-    next()
-  }
-  catch (err) {
-    console.error(err)
-    res.status(500).json({ success: false, message: "Server Error when trying to validate blog owner" })
-  }
-  //Post.findById(req.params.postId).populate("user").exec()
-  //.then(post =>{
-  //    if(!post){
-  //        return res.status(404).json({message:"Post does not exist"})
-  //    }
-  //    if(!(post.user._id.equals(req.user._id))){
-  //        return res.status(403).json({message:"Currently Logged in user is not the post creator"})
-  //    }
-  //    next()
-  //})
-  //.catch(err =>{
-  //    return res.status(500).json({message:"Server side Error."})
-  //})
+    next();
+  })
+  .catch(err => {
+    console.error(err);
+    res.status(500).json({ success: false, message: "Server Error when trying to validate blog owner" });
+  });
 }
 
