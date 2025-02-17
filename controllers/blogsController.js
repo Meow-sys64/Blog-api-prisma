@@ -52,7 +52,37 @@ module.exports = {
     }
 
   },
-  getComments: async (req, res, next) => {
+  getPublishedComments: async (req, res, next) => {
+    try {
+      const comments = await prisma.comment.findMany({
+        include: {
+          user: {
+            select: {
+              username: true
+            }
+          },
+        },
+        where: { 
+          //blogPostId: parseInt(req.params.blogId),
+          blogPost:{
+            id: parseInt(req.params.blogId),
+            isPublished:true
+          }
+        }
+      })
+      res.status(200).json({
+        success: true,
+        message: "Successfully got comments",
+        comments
+      })
+    }
+    catch (err) {
+      console.error(err)
+      res.status(500).json({
+        success: false,
+        message: "Server error when getting comments"
+      })
+    }
 
   },
   getComment: async (req, res, next) => {

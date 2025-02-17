@@ -7,7 +7,7 @@ const prisma = new PrismaClient()
 
 router.get("/", blogsController.getPublishedBlogs)
 router.get("/:blogId", blogsController.getBlog)
-router.get("/:blogId/comments", blogsController.getComments)
+router.get("/:blogId/comments", blogsController.getPublishedComments)
 router.get("/:blogId/comments/:commentId", blogsController.getComment)
 
 router.post("/", passport.authenticate("jwt", { session: false }), validateBlogger, blogsController.createBlog)
