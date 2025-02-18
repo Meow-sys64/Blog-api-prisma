@@ -21,8 +21,9 @@ model User {
   comments      Comment[]
   isBlogger     Boolean    @default(false)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  commentHistory CommentHistory[]
 }
 
 model BlogPost {
@@ -30,16 +31,32 @@ model BlogPost {
   title       String
   content     String
   comments    Comment[]
-  isPublished Boolean @default(false)
+  isPublished Boolean   @default(false)
 
   user   User? @relation(fields: [userId], references: [id])
   userId Int?
+
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  commentHistory CommentHistory[]
+}
+
+model Comment {
+  id      Int    @id @default(autoincrement())
+  content String
+
+  user           User?            @relation(fields: [userId], references: [id])
+  userId         Int?
+  blogPost       BlogPost?        @relation(fields: [blogPostId], references: [id])
+  blogPostId     Int?
+  commentHistory CommentHistory[]
+  isEdited       Boolean          @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-model Comment {
+model CommentHistory {
   id      Int    @id @default(autoincrement())
   content String
 
@@ -47,6 +64,8 @@ model Comment {
   userId     Int?
   blogPost   BlogPost? @relation(fields: [blogPostId], references: [id])
   blogPostId Int?
+  comment    Comment?  @relation(fields: [commentId], references: [id])
+  commentId  Int?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
