@@ -183,7 +183,7 @@ module.exports = {
       try {
         await prisma.blogPost.update({
           where: { id: parseInt(req.params.blogId) },
-          data:updatedData 
+          data: updatedData
         })
         return res.status(200).json({ success: true, message: "Blog updated" })
       }
@@ -192,9 +192,46 @@ module.exports = {
         return res.status(500).json({ success: false, message: "Server Error when updating blog post" })
       }
     }],
-  updateComment: async (req, res, next) => {
+  updateComment: [
+    body("content")
+      .escape(),
 
-  },
+    async (req, res, next) => {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ success: false, errorArray: errors.array() })
+      }
+
+
+
+      try {
+        await prisma.$transaction([
+          //create comment history
+          prisma.commentHistory.create({
+            data: {
+              user: { connect: { id: parseInt(req.commentData.userId) } },
+              content: req.commentData.content,
+              blogPost: { connect: { id: parseInt(req.commentData.blogPostId) } },
+              comment: {connect:{id:req.commentData.id}}
+            }
+          }),
+          //update comment
+          prisma.comment.update({
+            where: { id: parseInt(req.params.commentId) },
+            data: {
+              content: req.body.content,
+              isEdited: true
+            }
+          })
+
+        ])
+        return res.status(200).json({ success: true, message: "Comment updated" })
+      }
+      catch (err) {
+        console.error(err)
+        return res.status(500).json({ success: false, message: "Server Error when updating comment" })
+      }
+    }],
   deleteBlog: async (req, res, next) => {
 
   },
