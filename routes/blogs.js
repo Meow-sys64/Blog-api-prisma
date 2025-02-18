@@ -15,10 +15,10 @@ router.post("/:blogId/comments", passport.authenticate("jwt", { session: false }
 
 
 router.put("/:blogId", passport.authenticate("jwt", { session: false }), validateBlogger, validateBlogCreator, blogsController.updateBlog)
-router.put("/:blogId/comments/:commentId", passport.authenticate("jwt", { session: false }), blogsController.updateComment)
+router.put("/:blogId/comments/:commentId", passport.authenticate("jwt", { session: false }), validateCommentCreator, blogsController.updateComment)
 
 router.delete("/:blogId", passport.authenticate("jwt", { session: false }), validateBlogger, validateBlogCreator, blogsController.deleteBlog)
-router.delete("/:blogId/comments/:commentId", passport.authenticate("jwt", { session: false }), blogsController.deleteComment)
+router.delete("/:blogId/comments/:commentId", passport.authenticate("jwt", { session: false }), validateCommentCreator, blogsController.deleteComment)
 
 module.exports = router
 
@@ -57,3 +57,24 @@ function validateBlogCreator(req, res, next) {
   });
 }
 
+function validateCommentCreator(req, res, next) {
+  prisma.comment.findUnique({
+    where: { id: parseInt(req.params.commentId) }
+  })
+  .then(comment => {
+    if (!comment) {
+      return res.status(400).json({ success: false, message: "Comment does not exist" });
+    }
+
+    if (comment.userId !== req.user.id) {
+      return res.status(403).json({ success: false, message: "User does not own Comment" });
+    }
+      req.commentData = comment
+
+    next();
+  })
+  .catch(err => {
+    console.error(err);
+    res.status(500).json({ success: false, message: "Server Error when trying to validate comment owner" });
+  });
+}
