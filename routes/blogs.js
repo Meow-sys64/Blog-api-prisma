@@ -14,10 +14,10 @@ router.post("/", passport.authenticate("jwt", { session: false }), validateBlogg
 router.post("/:blogId/comments", passport.authenticate("jwt", { session: false }), blogsController.createComment)
 
 
-router.put("/:blogId", passport.authenticate("jwt", { session: false }), validateBlogger, validatePostCreator, blogsController.updateBlog)
+router.put("/:blogId", passport.authenticate("jwt", { session: false }), validateBlogger, validateBlogCreator, blogsController.updateBlog)
 router.put("/:blogId/comments/:commentId", passport.authenticate("jwt", { session: false }), blogsController.updateComment)
 
-router.delete("/:blogId", passport.authenticate("jwt", { session: false }), validateBlogger, validatePostCreator, blogsController.deleteBlog)
+router.delete("/:blogId", passport.authenticate("jwt", { session: false }), validateBlogger, validateBlogCreator, blogsController.deleteBlog)
 router.delete("/:blogId/comments/:commentId", passport.authenticate("jwt", { session: false }), blogsController.deleteComment)
 
 module.exports = router
@@ -36,7 +36,7 @@ function validateBlogger(req, res, next) {
   }
 }
 
-function validatePostCreator(req, res, next) {
+function validateBlogCreator(req, res, next) {
   prisma.blogPost.findUnique({
     where: { id: parseInt(req.params.blogId) }
   })
