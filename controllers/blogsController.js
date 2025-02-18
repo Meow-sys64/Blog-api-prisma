@@ -1,4 +1,4 @@
-const { PrismaClient } = require('@prisma/client')
+const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient()
 const { body, validationResult } = require('express-validator');
 
@@ -175,16 +175,31 @@ module.exports = {
       }
 
       //update blog
-      let updatedData = {}
+      let updatedData = { isEdited: true }
       if (req.body.title) updatedData.title = req.body.title;
       if (req.body.content) updatedData.content = req.body.content;
       if (req.body.isPublished !== undefined) updatedData.isPublished = req.body.isPublished;
 
       try {
-        await prisma.blogPost.update({
-          where: { id: parseInt(req.params.blogId) },
-          data: updatedData
-        })
+        await prisma.$transaction([
+          //create blog history
+          prisma.blogPostHistory.create({
+            data: {
+              title: req.blogData.title,
+              content: req.blogData.content,
+              isPublished: req.blogData.isPublished,
+              user: { connect: { id: req.blogData.userId } },
+              previousUpdatedAt: req.blogData.updatedAt,
+              blogPost: { connect: { id: parseInt(req.blogData.id) } }
+            }
+          }),
+          //update blog
+          prisma.blogPost.update({
+            where: { id: parseInt(req.params.blogId) },
+            data: updatedData
+          })
+
+        ])
         return res.status(200).json({ success: true, message: "Blog updated" })
       }
       catch (err) {
@@ -212,7 +227,7 @@ module.exports = {
               user: { connect: { id: parseInt(req.commentData.userId) } },
               content: req.commentData.content,
               blogPost: { connect: { id: parseInt(req.commentData.blogPostId) } },
-              comment: {connect:{id:req.commentData.id}}
+              comment: { connect: { id: req.commentData.id } }
             }
           }),
           //update comment
