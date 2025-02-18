@@ -189,7 +189,7 @@ module.exports = {
       }
       catch (err) {
         console.error(err)
-        return res.status(500).json({ success: false, message: "Server Error when creating blog post" })
+        return res.status(500).json({ success: false, message: "Server Error when updating blog post" })
       }
     }],
   updateComment: async (req, res, next) => {
