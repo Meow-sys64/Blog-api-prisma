@@ -285,6 +285,19 @@ module.exports = {
       }
     }],
   deleteBlog: async (req, res, next) => {
+    try {
+      await prisma.blogPost.update({
+        where: { id: parseInt(req.params.blogId) },
+        data: {
+          isDeleted: true
+        }
+      })
+      res.status(200).json({ success: true, message: "Blog deleted" })
+    }
+    catch (err) {
+      console.error(err)
+      return res.status(500).json({ success: false, message: "Server Error when deleteing blog" })
+    }
 
   },
   deleteComment: async (req, res, next) => {
