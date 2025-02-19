@@ -301,6 +301,30 @@ module.exports = {
 
   },
   deleteComment: async (req, res, next) => {
+    try {
+      //check blogPost for isPublished:true and isDeleted:false
+      const blogPost = await prisma.blogPost.findUnique({
+        where: { id: parseInt(req.params.blogId) }
+      })
+      if (!blogPost || blogPost.isPublished === false || blogPost.isDeleted === true) {
+        return res.status(400).json({ success: false, message: "Target Blog Post of comment is not found" })
+      }
+
+      //update comment for soft delete
+      await prisma.comment.update({
+        where: { id: parseInt(req.params.commentId) },
+        data: {
+          isDeleted: true
+        }
+      })
+
+      return res.status(200).json({ success: true, message: "Comment deleted" })
+    }
+    catch (err) {
+      console.error(err)
+      return res.status(500).json({ success: false, message: "Server Error when deleting comment" })
+    }
+
 
   },
 }
