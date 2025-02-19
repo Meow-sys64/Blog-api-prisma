@@ -100,13 +100,6 @@ module.exports = {
             }
           },
         },
-        where: {
-          //blogPostId: parseInt(req.params.blogId),
-          blogPost: {
-            id: parseInt(req.params.blogId),
-            isPublished: true
-          }
-        }
       })
       res.status(200).json({
         success: true,
@@ -179,14 +172,6 @@ module.exports = {
 
       // create Comment
       try {
-        //check blogPost for isPublished:true and isDeleted:false
-        const blogPost = await prisma.blogPost.findUnique({
-          where: { id: parseInt(req.params.blogId) }
-        })
-        if (!blogPost || blogPost.isPublished === false || blogPost.isDeleted === true) {
-          return res.status(400).json({ success: false, message: "Target Blog Post of comment is not found" })
-        }
-
         await prisma.comment.create({
           data: {
             user: { connect: { id: parseInt(req.user.id) } },
@@ -249,14 +234,6 @@ module.exports = {
       }
 
       try {
-        //check blogPost for isPublished:true and isDeleted:false
-        const blogPost = await prisma.blogPost.findUnique({
-          where: { id: parseInt(req.params.blogId) }
-        })
-        if (!blogPost || blogPost.isPublished === false || blogPost.isDeleted === true) {
-          return res.status(400).json({ success: false, message: "Target Blog Post of comment is not found" })
-        }
-
         await prisma.$transaction([
           //create comment history
           prisma.commentHistory.create({
@@ -302,14 +279,6 @@ module.exports = {
   },
   deleteComment: async (req, res, next) => {
     try {
-      //check blogPost for isPublished:true and isDeleted:false
-      const blogPost = await prisma.blogPost.findUnique({
-        where: { id: parseInt(req.params.blogId) }
-      })
-      if (!blogPost || blogPost.isPublished === false || blogPost.isDeleted === true) {
-        return res.status(400).json({ success: false, message: "Target Blog Post of comment is not found" })
-      }
-
       //update comment for soft delete
       await prisma.comment.update({
         where: { id: parseInt(req.params.commentId) },
