@@ -1,5 +1,35 @@
 const { PrismaClient } = require('@prisma/client')
-const prisma = new PrismaClient()
+const prisma = new PrismaClient().$extends({
+  query: {
+    blogPost: {
+      $allOperations({ model, operation, args, query }) {
+        //filter create and delete operations
+        const createAndDeleteOperations = ["create", "createMany", "createManyAndReturn", "delete", "deleteMany", "deleteManyAndReturn"]
+        if (createAndDeleteOperations.includes(operation)) {
+          return query(args)
+        }
+
+        args.where = { ...args.where, isDeleted: false, isPublished: true }
+
+        return query(args)
+      }
+    },
+    comment: {
+      $allOperations({ model, operation, args, query }) {
+        //filter create and delete operations
+        const createOperations = ["create", "createMany", "createManyAndReturn"]
+        if (createOperations.includes(operation)) {
+          return query(args)
+        }
+
+        args.where = { ...args.where, isDeleted: false }
+
+        return query(args)
+      }
+    }
+
+  }
+})
 const { body, validationResult } = require('express-validator');
 
 module.exports = {
