@@ -32,6 +32,7 @@ model BlogPost {
   content     String
   comments    Comment[]
   isPublished Boolean   @default(false)
+  isDeleted   Boolean   @default(false)
 
   user   User? @relation(fields: [userId], references: [id])
   userId Int?
@@ -51,6 +52,7 @@ model Comment {
   blogPostId     Int?
   commentHistory CommentHistory[]
   isEdited       Boolean          @default(false)
+  isDeleted      Boolean          @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
