@@ -13,7 +13,11 @@ module.exports = {
               isBlogger: true,
               //password_hash:false,
             }
-          }
+          },
+        },
+        omit: {
+          isPublished: true,
+          isDeleted: true
         },
         where: { isPublished: true }
       })
@@ -35,6 +39,10 @@ module.exports = {
               //password_hash:false,
             }
           }
+        },
+        omit: {
+          isPublished: true,
+          isDeleted: true
         },
         where: {
           isPublished: true,
