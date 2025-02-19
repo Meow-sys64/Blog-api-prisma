@@ -40,41 +40,41 @@ function validateBlogCreator(req, res, next) {
   prisma.blogPost.findUnique({
     where: { id: parseInt(req.params.blogId) }
   })
-  .then(blog => {
-    if (!blog) {
-      return res.status(400).json({ success: false, message: "Blog does not exist" });
-    }
+    .then(blog => {
+      if (!blog) {
+        return res.status(400).json({ success: false, message: "Blog does not exist" });
+      }
 
-    if (blog.userId !== req.user.id) {
-      return res.status(403).json({ success: false, message: "User does not own Blog" });
-    }
+      if (blog.userId !== req.user.id) {
+        return res.status(403).json({ success: false, message: "User does not own Blog" });
+      }
 
-    next();
-  })
-  .catch(err => {
-    console.error(err);
-    res.status(500).json({ success: false, message: "Server Error when trying to validate blog owner" });
-  });
+      next();
+    })
+    .catch(err => {
+      console.error(err);
+      res.status(500).json({ success: false, message: "Server Error when trying to validate blog owner" });
+    });
 }
 
 function validateCommentCreator(req, res, next) {
   prisma.comment.findUnique({
     where: { id: parseInt(req.params.commentId) }
   })
-  .then(comment => {
-    if (!comment) {
-      return res.status(400).json({ success: false, message: "Comment does not exist" });
-    }
+    .then(comment => {
+      if (!comment) {
+        return res.status(400).json({ success: false, message: "Comment does not exist" });
+      }
 
-    if (comment.userId !== req.user.id) {
-      return res.status(403).json({ success: false, message: "User does not own Comment" });
-    }
+      if (comment.userId !== req.user.id) {
+        return res.status(403).json({ success: false, message: "User does not own Comment" });
+      }
       req.commentData = comment
 
-    next();
-  })
-  .catch(err => {
-    console.error(err);
-    res.status(500).json({ success: false, message: "Server Error when trying to validate comment owner" });
-  });
+      next();
+    })
+    .catch(err => {
+      console.error(err);
+      res.status(500).json({ success: false, message: "Server Error when trying to validate comment owner" });
+    });
 }

@@ -264,7 +264,7 @@ module.exports = {
               user: { connect: { id: parseInt(req.commentData.userId) } },
               content: req.commentData.content,
               blogPost: { connect: { id: parseInt(req.commentData.blogPostId) } },
-              comment: {connect:{id:req.commentData.id}}
+              comment: { connect: { id: req.commentData.id } }
             }
           }),
           //update comment
