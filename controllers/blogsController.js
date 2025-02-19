@@ -248,9 +248,15 @@ module.exports = {
         return res.status(400).json({ success: false, errorArray: errors.array() })
       }
 
-
-
       try {
+        //check blogPost for isPublished:true and isDeleted:false
+        const blogPost = await prisma.blogPost.findUnique({
+          where: { id: parseInt(req.params.blogId) }
+        })
+        if (!blogPost || blogPost.isPublished === false || blogPost.isDeleted === true) {
+          return res.status(400).json({ success: false, message: "Target Blog Post of comment is not found" })
+        }
+
         await prisma.$transaction([
           //create comment history
           prisma.commentHistory.create({
