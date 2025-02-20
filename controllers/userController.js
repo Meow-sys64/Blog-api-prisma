@@ -31,7 +31,7 @@ module.exports = {
       })
 
       if (checkName) {
-        res.status(400).json({ message: "Username already exists", })
+        return res.status(400).json({ message: "Username already exists", })
       }
 
       //create account
@@ -109,7 +109,7 @@ module.exports = {
       if (!errors.isEmpty()) {
         return res.status(400).json({ success: false, errorArray: errors.array() })
       }
-console.log(req.user);
+      console.log(req.user);
 
       // validate secretCode
       // update isBlogger status
@@ -122,7 +122,7 @@ console.log(req.user);
             isBlogger: true
           }
         })
-        res.status(200).json({success: true, message:"User given blogger privileges"})
+        res.status(200).json({ success: true, message: "User given blogger privileges" })
       }
       catch (err) {
         console.error(err)

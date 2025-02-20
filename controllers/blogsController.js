@@ -1,5 +1,35 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient()
+const { PrismaClient } = require('@prisma/client')
+const prisma = new PrismaClient().$extends({
+  query: {
+    blogPost: {
+      $allOperations({ model, operation, args, query }) {
+        //filter create and delete operations
+        const createAndDeleteOperations = ["create", "createMany", "createManyAndReturn", "delete", "deleteMany", "deleteManyAndReturn"]
+        if (createAndDeleteOperations.includes(operation)) {
+          return query(args)
+        }
+
+        args.where = { ...args.where, isDeleted: false, isPublished: true }
+
+        return query(args)
+      }
+    },
+    comment: {
+      $allOperations({ model, operation, args, query }) {
+        //filter create and delete operations
+        const createOperations = ["create", "createMany", "createManyAndReturn"]
+        if (createOperations.includes(operation)) {
+          return query(args)
+        }
+
+        args.where = { ...args.where, isDeleted: false }
+
+        return query(args)
+      }
+    }
+
+  }
+})
 const { body, validationResult } = require('express-validator');
 
 module.exports = {
@@ -13,7 +43,11 @@ module.exports = {
               isBlogger: true,
               //password_hash:false,
             }
-          }
+          },
+        },
+        omit: {
+          isPublished: true,
+          isDeleted: true
         },
         where: { isPublished: true }
       })
@@ -35,6 +69,10 @@ module.exports = {
               //password_hash:false,
             }
           }
+        },
+        omit: {
+          isPublished: true,
+          isDeleted: true
         },
         where: {
           isPublished: true,
@@ -62,13 +100,6 @@ module.exports = {
             }
           },
         },
-        where: {
-          //blogPostId: parseInt(req.params.blogId),
-          blogPost: {
-            id: parseInt(req.params.blogId),
-            isPublished: true
-          }
-        }
       })
       res.status(200).json({
         success: true,
@@ -217,8 +248,6 @@ module.exports = {
         return res.status(400).json({ success: false, errorArray: errors.array() })
       }
 
-
-
       try {
         await prisma.$transaction([
           //create comment history
@@ -248,9 +277,38 @@ module.exports = {
       }
     }],
   deleteBlog: async (req, res, next) => {
+    try {
+      await prisma.blogPost.update({
+        where: { id: parseInt(req.params.blogId) },
+        data: {
+          isDeleted: true
+        }
+      })
+      res.status(200).json({ success: true, message: "Blog deleted" })
+    }
+    catch (err) {
+      console.error(err)
+      return res.status(500).json({ success: false, message: "Server Error when deleteing blog" })
+    }
 
   },
   deleteComment: async (req, res, next) => {
+    try {
+      //update comment for soft delete
+      await prisma.comment.update({
+        where: { id: parseInt(req.params.commentId) },
+        data: {
+          isDeleted: true
+        }
+      })
+
+      return res.status(200).json({ success: true, message: "Comment deleted" })
+    }
+    catch (err) {
+      console.error(err)
+      return res.status(500).json({ success: false, message: "Server Error when deleting comment" })
+    }
+
 
   },
 }
