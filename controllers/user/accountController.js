@@ -1,7 +1,7 @@
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 const { body, validationResult } = require('express-validator');
-const { genHash, validateHash, issueJWT } = require('../lib/Utils');
+const { genHash, validateHash, issueJWT } = require('../../lib/Utils');
 
 module.exports = {
   register: [

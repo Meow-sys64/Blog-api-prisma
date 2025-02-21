@@ -1,151 +1,74 @@
-const { Prisma } = require('@prisma/client');
+const { PrismaClient } = require('@prisma/client')
+const prisma = new PrismaClient()
 
-const softDeleteExtension = (prisma) => {
-  // Store original methods to avoid recursion
-  const originalFindManyBlogPost = prisma.blogPost.findMany;
-  const originalFindUniqueBlogPost = prisma.blogPost.findUnique;
-  const originalFindFirstBlogPost = prisma.blogPost.findFirst;
-  const originalCreateBlogPost = prisma.blogPost.create;
-  const originalUpdateBlogPost = prisma.blogPost.update;
-  const originalUpdateManyBlogPost = prisma.blogPost.updateMany;
-  //const originalDeleteBlogPost = prisma.blogPost.delete;
-  //const originalDeleteManyBlogPost = prisma.blogPost.deleteMany;
-
-  const originalFindManyComment = prisma.comment.findMany;
-  const originalFindUniqueComment = prisma.comment.findUnique;
-  const originalFindFirstComment = prisma.comment.findFirst;
-  const originalCreateComment = prisma.comment.create;
-  const originalUpdateComment = prisma.comment.update;
-  const originalUpdateManyComment = prisma.comment.updateMany;
-  //const originalDeleteComment = prisma.comment.delete;
-  //const originalDeleteManyComment = prisma.comment.deleteMany;
-
-  // Read Operations: Add `isDeleted: false` to find queries
-  prisma.blogPost.findMany = async (args) => {
-    if (!args.where) {
-      args.where = {};
+module.exports = {
+  validateBlogger(req, res, next) {
+    try {
+      if (!(req.user.isBlogger)) {
+        return res.status(403).json({ message: "Forbidden. User not Blogger" })
+      }
+      else {
+        next()
+      }
     }
-    args.where.isDeleted = false;  // Ensure soft-deleted posts are excluded
-    return originalFindManyBlogPost.call(prisma, args);
-  };
-
-  prisma.blogPost.findUnique = async (args) => {
-    if (!args.where) {
-      args.where = {};
+    catch (err) {
+      return res.status(500).json({ message: "Server side Error." })
     }
-    args.where.isDeleted = false;
-    return originalFindUniqueBlogPost.call(prisma, args);
-  };
+  },
 
-  prisma.blogPost.findFirst = async (args) => {
-    if (!args.where) {
-      args.where = {};
+  validateBlogCreator(req, res, next) {
+    prisma.blogPost.findUnique({
+      where: { id: parseInt(req.params.blogId) }
+    })
+      .then(blog => {
+        if (!blog) {
+          return res.status(400).json({ success: false, message: "Blog does not exist" });
+        }
+
+        if (blog.userId !== req.user.id) {
+          return res.status(403).json({ success: false, message: "User does not own Blog" });
+        }
+        req.blogData = blog
+        next();
+      })
+      .catch(err => {
+        console.error(err);
+        res.status(500).json({ success: false, message: "Server Error when trying to validate blog owner" });
+      });
+  },
+
+  validateCommentCreator(req, res, next) {
+    prisma.comment.findUnique({
+      where: { id: parseInt(req.params.commentId) }
+    })
+      .then(comment => {
+        if (!comment) {
+          return res.status(400).json({ success: false, message: "Comment does not exist" });
+        }
+
+        if (comment.userId !== req.user.id) {
+          return res.status(403).json({ success: false, message: "User does not own Comment" });
+        }
+        req.commentData = comment
+
+        next();
+      })
+      .catch(err => {
+        console.error(err);
+        res.status(500).json({ success: false, message: "Server Error when trying to validate comment owner" });
+      });
+  },
+
+  async checkBlogOfComments(req, res, next) {
+    //check blogPost for isPublished:true and isDeleted:false
+    const blogPost = await prisma.blogPost.findUnique({
+      where: { id: parseInt(req.params.blogId) }
+    })
+    if (!blogPost || blogPost.isPublished === false || blogPost.isDeleted === true) {
+      return res.status(400).json({ success: false, message: "Target Blog Post of comment is not found" })
     }
-    args.where.isDeleted = false;
-    return originalFindFirstBlogPost.call(prisma, args);
-  };
+    next()
 
-  // Create Operation: No need to filter `isDeleted`, but ensure it's set to `false` when creating
-  prisma.blogPost.create = async (args) => {
-    if (!args.data.isDeleted) {
-      args.data.isDeleted = false;  // Ensure new posts are not soft-deleted by default
-    }
-    return originalCreateBlogPost.call(prisma, args);
-  };
+  },
 
-  // Update Operations: Respect `isDeleted` flag
-  prisma.blogPost.update = async (args) => {
-    if (args.data.isDeleted !== undefined && args.data.isDeleted === true) {
-      // If the update is trying to set `isDeleted: true`, make sure it's a proper soft delete
-      args.data.isDeleted = true;
-    }
-    return originalUpdateBlogPost.call(prisma, args);
-  };
-
-  prisma.blogPost.updateMany = async (args) => {
-    if (args.data.isDeleted !== undefined && args.data.isDeleted === true) {
-      args.data.isDeleted = true;
-    }
-    return originalUpdateManyBlogPost.call(prisma, args);
-  };
-
-  //// Soft Delete (instead of actual delete)
-  //prisma.blogPost.delete = async (args) => {
-  //  // Soft delete instead of actual deletion
-  //  return prisma.blogPost.update({
-  //    where: args.where,
-  //    data: { isDeleted: true },  // Set isDeleted flag to true instead of deleting
-  //  });
-  //};
-  //
-  //prisma.blogPost.deleteMany = async (args) => {
-  //  return prisma.blogPost.updateMany({
-  //    where: args.where,
-  //    data: { isDeleted: true },  // Soft delete multiple posts
-  //  });
-  //};
-
-  // Repeat the same logic for the Comment model
-  prisma.comment.findMany = async (args) => {
-    if (!args.where) {
-      args.where = {};
-    }
-    args.where.isDeleted = false;
-    return originalFindManyComment.call(prisma, args);
-  };
-
-  prisma.comment.findUnique = async (args) => {
-    if (!args.where) {
-      args.where = {};
-    }
-    args.where.isDeleted = false;
-    return originalFindUniqueComment.call(prisma, args);
-  };
-
-  prisma.comment.findFirst = async (args) => {
-    if (!args.where) {
-      args.where = {};
-    }
-    args.where.isDeleted = false;
-    return originalFindFirstComment.call(prisma, args);
-  };
-
-  prisma.comment.create = async (args) => {
-    if (!args.data.isDeleted) {
-      args.data.isDeleted = false;
-    }
-    return originalCreateComment.call(prisma, args);
-  };
-
-  prisma.comment.update = async (args) => {
-    if (args.data.isDeleted !== undefined && args.data.isDeleted === true) {
-      args.data.isDeleted = true;
-    }
-    return originalUpdateComment.call(prisma, args);
-  };
-
-  prisma.comment.updateMany = async (args) => {
-    if (args.data.isDeleted !== undefined && args.data.isDeleted === true) {
-      args.data.isDeleted = true;
-    }
-    return originalUpdateManyComment.call(prisma, args);
-  };
-
-  //prisma.comment.delete = async (args) => {
-  //  return prisma.comment.update({
-  //    where: args.where,
-  //    data: { isDeleted: true },  // Soft delete a comment
-  //  });
-  //};
-  //
-  //prisma.comment.deleteMany = async (args) => {
-  //  return prisma.comment.updateMany({
-  //    where: args.where,
-  //    data: { isDeleted: true },  // Soft delete multiple comments
-  //  });
-  //};
-
-  return prisma;
-};
-
-module.exports = { softDeleteExtension };
+}
