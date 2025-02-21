@@ -67,6 +67,7 @@ module.exports = {
     if (!blogPost || blogPost.isPublished === false || blogPost.isDeleted === true) {
       return res.status(400).json({ success: false, message: "Target Blog Post of comment is not found" })
     }
+    req.blogData = blogPost
     next()
 
   },

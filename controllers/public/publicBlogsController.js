@@ -100,6 +100,9 @@ module.exports = {
             }
           },
         },
+        where: {
+          blogPostId: req.blogData.id
+        }
       })
       res.status(200).json({
         success: true,
