@@ -6,12 +6,6 @@ const PORT = process.env.PORT || 3235
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-//const indexRoute = require("./routes/index")
-//const userRoute = require("./routes/user")
-//const blogsRoute = require("./routes/blogs")
-//
-//app.use("/", indexRoute)
-//app.use("/blogs", blogsRoute)
 //Full routes: /( public || user || admin)/blogs/:blogId/comments/:commentId
 //user/login
 //user/register
@@ -24,7 +18,6 @@ app.use("/user", userRoute)
 app.use("/admin", adminRoute)
 
 app.all("/*", (req, res, next) => {
-  //console.error(err)
   return res.status(404).json({ success: false, message: "Resource Not Found" })
 })
 
