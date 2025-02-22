@@ -9,7 +9,7 @@ const prisma = new PrismaClient().$extends({
           return query(args)
         }
 
-        args.where = { ...args.where, isDeleted: false, isPublished: true }
+        args.where = { ...args.where, isDeleted: false }
 
         return query(args)
       }
@@ -33,91 +33,56 @@ const prisma = new PrismaClient().$extends({
 const { body, validationResult } = require('express-validator');
 
 module.exports = {
-  getPublishedBlogs: async (req, res, next) => {
-    try {
-      const blogs = await prisma.blogPost.findMany({
-        include: {
-          user: {
-            select: {
-              username: true,
-              isBlogger: true,
-              //password_hash:false,
-            }
-          },
-        },
-        omit: {
-          isPublished: true,
-          isDeleted: true
-        },
-        where: { isPublished: true }
-      })
-      res.status(200).json({ success: true, blogs })
-    }
-    catch (err) {
-      console.error(err)
-      res.status(500).json({ success: false, message: 'Server Error when getting blogs' })
-    }
-  },
-  getBlog: async (req, res, next) => {
+  getSpecificBlogFromCurrentUser: async (req, res, next) => {
     try {
       const blog = await prisma.blogPost.findUnique({
         include: {
           user: {
             select: {
               username: true,
-              isBlogger: true,
-              //password_hash:false,
+              isBlogger: true
             }
           }
         },
         omit: {
-          isPublished: true,
           isDeleted: true
         },
         where: {
-          isPublished: true,
+          userId: parseInt(req.user.id),
           id: parseInt(req.params.blogId)
         }
       })
-      if (!blog) {
-        res.status(400).json({ success: false, message: "Blog not found" })
-      }
       res.status(200).json({ success: true, blog })
-    }
-    catch (err) {
-      console.error(err)
-      res.status(500).json({ success: false, message: 'Server Error when getting blogs' })
-    }
 
+    } catch (err) {
+      console.error(err)
+      res.status(500).json({ success: false, message: "Server Error while getting current user's blogs" })
+
+    }
   },
-  getPublishedComments: async (req, res, next) => {
+  getCurrentUsersBlogs: async (req, res, next) => {
     try {
-      const comments = await prisma.comment.findMany({
-        include: {
-          user: {
-            select: {
-              username: true
-            }
-          },
+      const blogs = await prisma.blogPost.findMany({
+        //include: {
+        //  user: {
+        //    select: {
+        //      username: true,
+        //      isBlogger: true
+        //    }
+        //  }
+        //},
+        omit: {
+          isDeleted: true
         },
+        where: { userId: parseInt(req.user.id) }
       })
-      res.status(200).json({
-        success: true,
-        message: "Successfully got comments",
-        comments
-      })
-    }
-    catch (err) {
+      res.status(200).json({ success: true, blogs })
+
+    } catch (err) {
       console.error(err)
-      res.status(500).json({
-        success: false,
-        message: "Server error when getting comments"
-      })
+      res.status(500).json({ success: false, message: "Server Error while getting current user's blogs" })
+
     }
-
-  },
-  getComment: async (req, res, next) => {
-
   },
   createBlog: [
     body("title")

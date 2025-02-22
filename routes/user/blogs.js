@@ -5,8 +5,8 @@ const passport = require("passport")
 const { checkBlogOfComments, validateBlogger, validateBlogCreator, validateCommentCreator } = require("../../middleware.js")
 //TODO GET current user's ALL blogs, including unpublished
 //GET specfic unpublished blog
-//router.get("/", blogsController.getPublishedBlogs)
-//router.get("/:blogId", blogsController.getBlog)
+router.get("/your-blogs", passport.authenticate("jwt", { session: false }), blogsController.getCurrentUsersBlogs)
+router.get("/your-blogs/:blogId", passport.authenticate("jwt", { session: false }), blogsController.getSpecificBlogFromCurrentUser)
 //router.get("/:blogId/comments", checkBlogOfComments, blogsController.getPublishedComments)
 //router.get("/:blogId/comments/:commentId", checkBlogOfComments, blogsController.getComment)
 
