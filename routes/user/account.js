@@ -11,3 +11,4 @@ router.put("/bloggerStatus", passport.authenticate("jwt", { session: false }), a
 router.delete("/", accountController.deleteUser)
 
 module.exports = router
+router.get("/token-status", passport.authenticate("jwt",{session:false}), accountController.getTokenStatus)

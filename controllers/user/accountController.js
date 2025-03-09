@@ -134,3 +134,6 @@ module.exports = {
 
   },
 }
+  getTokenStatus: async (req, res, next) => {
+    res.status(200).json({ success: true, message: "Token is valid", username: req.user.username })
+  },
