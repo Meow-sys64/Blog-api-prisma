@@ -44,7 +44,7 @@ module.exports = {
           }
         })
         const jwt = issueJWT(user)
-        return res.status(200).json({ success: true, token: jwt , username: user.username})
+        return res.status(200).json({ success: true, token: jwt, username: user.username, isAdmin: false, isBlogger: false })
 
       }
       catch (err) {
@@ -92,7 +92,7 @@ module.exports = {
 
         //issue token
         const jwt = issueJWT(user)
-        return res.status(200).json({ success: true, token: jwt, username:user.username })
+        return res.status(200).json({ success: true, token: jwt, username: user.username, isAdmin: user.isAdmin, isBlogger: user.isBlogger })
 
       }
       catch (err) {
@@ -131,7 +131,7 @@ module.exports = {
     }
   ],
   getTokenStatus: async (req, res, next) => {
-    res.status(200).json({ success: true, message: "Token is valid", username: req.user.username })
+    res.status(200).json({ success: true, message: "Token is valid", username: req.user.username, isAdmin: req.user.isAdmin, isBlogger: req.user.isBlogger })
   },
   deleteUser: async (req, res, next) => {
 
