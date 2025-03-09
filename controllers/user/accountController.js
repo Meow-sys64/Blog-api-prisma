@@ -44,7 +44,7 @@ module.exports = {
           }
         })
         const jwt = issueJWT(user)
-        return res.status(200).json({ success: true, token: jwt })
+        return res.status(200).json({ success: true, token: jwt , username: user.username})
 
       }
       catch (err) {
@@ -81,18 +81,18 @@ module.exports = {
         })
         //Verify user
         if (!user) {
-          return res.status(400).json({ success: false, message: "Username does not exist." })
+          return res.status(401).json({ success: false, message: "Username does not exist." })
         }
 
         //Verify password
         const isValid = validateHash(password, user.password_hash)
         if (!isValid) {
-          return res.status(400).json({ success: false, message: "Incorrect Password" })
+          return res.status(401).json({ success: false, message: "Incorrect Password" })
         }
 
         //issue token
         const jwt = issueJWT(user)
-        return res.status(200).json({ success: true, token: jwt })
+        return res.status(200).json({ success: true, token: jwt, username:user.username })
 
       }
       catch (err) {
@@ -130,10 +130,10 @@ module.exports = {
       }
     }
   ],
+  getTokenStatus: async (req, res, next) => {
+    res.status(200).json({ success: true, message: "Token is valid", username: req.user.username })
+  },
   deleteUser: async (req, res, next) => {
 
   },
 }
-  getTokenStatus: async (req, res, next) => {
-    res.status(200).json({ success: true, message: "Token is valid", username: req.user.username })
-  },
