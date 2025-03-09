@@ -2,13 +2,21 @@ const express = require("express")
 const app = express()
 const passport = require("passport")
 require("./config/passport.js")(passport)
+const cors = require('cors')
+
 const PORT = process.env.PORT || 3235
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-//Full routes: /( public || user || admin)/blogs/:blogId/comments/:commentId
-//user/login
-//user/register
+const corsOptions = {
+  origin: '*', // URL of your React frontend (or your production URL if deployed)
+  optionsSuccessStatus:200,
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+
+// Use CORS middleware
+app.use(cors(corsOptions));
+
 const publicRoute = require("./routes/public/index.js")
 const userRoute = require("./routes/user/index.js")
 const adminRoute = require("./routes/admin/index.js")
