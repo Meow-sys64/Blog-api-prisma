@@ -31,7 +31,7 @@ module.exports = {
       })
 
       if (checkName) {
-        return res.status(400).json({ message: "Username already exists", })
+        return res.status(401).json({ message: "Username already exists", })
       }
 
       //create account
@@ -40,11 +40,12 @@ module.exports = {
         const user = await prisma.user.create({
           data: {
             username: username,
-            password_hash: passwordHash
+            password_hash: passwordHash,
+            isBlogger:true
           }
         })
         const jwt = issueJWT(user)
-        return res.status(200).json({ success: true, token: jwt, username: user.username, isAdmin: false, isBlogger: false })
+        return res.status(200).json({ success: true, token: jwt, username: user.username, isAdmin: user.isAdmin, isBlogger: user.isBlogger })
 
       }
       catch (err) {
