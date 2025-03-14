@@ -48,10 +48,15 @@ module.exports = {
           isDeleted: true
         },
         where: {
-          userId: parseInt(req.user.id),
           id: parseInt(req.params.blogId)
         }
       })
+      if (blog.user.id !== req.user.id) {
+        return res.status(403).json({ message: "User does not own Blog!" })
+      }
+      if (!blog) {
+        return res.status(404).json({ message: "Blog not found" })
+      }
       res.status(200).json({ success: true, blog })
 
     } catch (err) {
