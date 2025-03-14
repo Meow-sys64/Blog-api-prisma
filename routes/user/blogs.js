@@ -14,7 +14,7 @@ router.post("/", passport.authenticate("jwt", { session: false }), validateBlogg
 router.post("/:blogId/comments", checkBlogOfComments, passport.authenticate("jwt", { session: false }), blogsController.createComment)
 
 
-router.put("/:blogId", passport.authenticate("jwt", { session: false }), validateBlogger, validateBlogCreator, blogsController.updateBlog)
+router.put("/your-blogs/:blogId", passport.authenticate("jwt", { session: false }), validateBlogger, validateBlogCreator, blogsController.updateBlog)
 router.put("/:blogId/comments/:commentId", checkBlogOfComments, passport.authenticate("jwt", { session: false }), validateCommentCreator, blogsController.updateComment)
 
 router.delete("/:blogId", passport.authenticate("jwt", { session: false }), validateBlogger, validateBlogCreator, blogsController.deleteBlog)
