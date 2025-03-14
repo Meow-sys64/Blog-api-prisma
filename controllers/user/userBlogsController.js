@@ -51,7 +51,7 @@ module.exports = {
           id: parseInt(req.params.blogId)
         }
       })
-      if (blog.user.id !== req.user.id) {
+      if (blog.userId !== req.user.id) {
         return res.status(403).json({ message: "User does not own Blog!" })
       }
       if (!blog) {
