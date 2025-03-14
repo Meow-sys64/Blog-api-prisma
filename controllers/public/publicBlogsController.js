@@ -66,7 +66,7 @@ module.exports = {
             select: {
               username: true,
               isBlogger: true,
-              //password_hash:false,
+              id: true
             }
           }
         },
